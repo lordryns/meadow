@@ -13,3 +13,9 @@ KeyCode gen_keycode_from_string(wm_t *wm, const char *k, unsigned int mod) {
   KeyCode code = XKeysymToKeycode(wm->display, ksym);
   return code;
 }
+
+XWindowAttributes get_window_attributes(Display *display, Window window) {
+  XWindowAttributes xc;
+  XGetWindowAttributes(display, window, &xc);
+  return xc;
+}

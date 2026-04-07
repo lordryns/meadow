@@ -11,4 +11,6 @@
 void grab_key_with_string(wm_t *wm, const char *k, unsigned int mod);
 KeyCode gen_keycode_from_string(wm_t *wm, const char *k, unsigned int mod);
 
+XWindowAttributes get_window_attributes(Display *display, Window window);
+
 #endif // ! MEADOW_UTILS_H
