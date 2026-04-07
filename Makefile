@@ -7,7 +7,7 @@ build: $(TARGET)
 	$(CC) -o $(OUTPUT) $(CFLAGS) $(TARGET) $(LIBS)
 
 run:
-	xinit ./xinitrc -- /usr/bin/Xephyr :100 -ac -screen 1380x720 -host-cursor
+	xinit ./xinitrc -- /usr/bin/Xephyr :100 -ac -screen 1100x700 -host-cursor
 
 clean:
 	rm -rf $(OUTPUT)
