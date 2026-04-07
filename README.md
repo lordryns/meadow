@@ -35,8 +35,8 @@ make build && make run
 
 ## Default key bindings 
 
-Super + Q = Exit window manager
-Super + Space = Open application launcher (dmenu by default but can be changed in `config.h`)
+- Super + Q = Exit window manager
+- Super + Space = Open application launcher (dmenu by default but can be changed in `config.h`)
 
 
 Have fun :)
