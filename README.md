@@ -28,7 +28,7 @@ make build && make run
 ```
 
 > [!NOTE]
-> Always use `make run` as starting as `./meadow` will fail 
+> Always use `make run` to run the nested window manager as executing `./meadow` directly will fail 
 
 
 2. Run directly from the tty, this should be obvious but set your `.xinitrc` to `exec /path/to/meadow` before exiting your current window manager and launching meadow by running `startx`
