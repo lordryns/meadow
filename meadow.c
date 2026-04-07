@@ -23,7 +23,7 @@ void initialse_wm(wm_t *wm) {
 
   // setting to AnyModifier will ensure that a request will be sent regardless
   // of the modifier used
-  grab_key_with_string(wm, "q", AnyModifier);
+  grab_key_with_string(wm, WM_EXIT_KEY, AnyModifier);
   grab_key_with_string(
       wm, "space",
       Mod4Mask); // this request will only be sent if the super key is used
@@ -33,9 +33,9 @@ void initialse_wm(wm_t *wm) {
 void handle_key_events(wm_t *wm, XEvent *e) {
   // note to self that this is solely for checking and the modifier is actually
   // important
-  KeyCode quit_kcode = gen_keycode_from_string(wm, "q", Mod4Mask);
+  KeyCode quit_kcode = gen_keycode_from_string(wm, WM_EXIT_KEY, MODIFIER);
   KeyCode debug_kcode = gen_keycode_from_string(wm, "q", AnyModifier);
-  if (e->xkey.state == Mod4Mask) {
+  if (e->xkey.state == MODIFIER) {
     if (e->xkey.keycode == quit_kcode) {
       exit(0);
     }
