@@ -1,7 +1,7 @@
 OUTPUT = meadow 
 CFLAGS = -Wextra -Wall -Wpedantic
 LIBS = -lX11
-TARGET = meadow.c
+TARGET = meadow.c utils.c
 
 build: $(TARGET)
 	$(CC) -o $(OUTPUT) $(CFLAGS) $(TARGET) $(LIBS)
