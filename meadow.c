@@ -63,6 +63,10 @@ int main(void) {
       client_t *client = grab_client_window(&wm, &e);
       render_client(&wm, client);
     }
+    case EnterNotify: {
+      XSetInputFocus(wm.display, e.xcrossing.window, RevertToParent,
+                     CurrentTime);
+    }
     }
     XSync(wm.display, 0);
   }

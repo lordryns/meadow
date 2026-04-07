@@ -11,6 +11,9 @@ client_t *grab_client_window(wm_t *wm, XEvent *e) {
   Window win = re->window;
   XWindowAttributes win_attr = get_window_attributes(wm->display, win);
 
+  XSelectInput(wm->display, win,
+               EnterWindowMask | LeaveWindowMask | ExposureMask);
+
   client_t *c = malloc(sizeof(client_t));
   c->window = win;
   c->width = win_attr.width;
@@ -36,6 +39,7 @@ void render_client(wm_t *wm, client_t *c) {
   XMapWindow(wm->display, win);
   XMapWindow(wm->display, c->window);
   XSetInputFocus(wm->display, c->window, RevertToParent, CurrentTime);
+  XSync(wm->display, 0);
 
   for (client_t *it = wm->window_list_head; it != NULL; it = it->next) {
   }
