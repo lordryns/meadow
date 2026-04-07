@@ -1,11 +1,11 @@
 #include "meadow.h"
+#include "client.h"
 #include "config.h"
 #include "utils.h"
 #include <X11/X.h>
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 void initialse_wm(wm_t *wm) {
@@ -26,6 +26,8 @@ void initialse_wm(wm_t *wm) {
   grab_key_with_string(wm, WM_EXIT_KEY, AnyModifier);
   grab_key_with_string(wm, APP_LAUNCHER_KEY, AnyModifier);
   XSync(wm->display, 0);
+
+  wm->window_list_head = NULL;
 }
 
 void handle_key_events(wm_t *wm, XEvent *e) {
@@ -56,6 +58,10 @@ int main(void) {
     case KeyPress: {
       handle_key_events(&wm, &e);
       break;
+    }
+    case MapRequest: {
+      client_t *client = grab_client_window(&wm, &e);
+      render_client(&wm, client);
     }
     }
     XSync(wm.display, 0);
