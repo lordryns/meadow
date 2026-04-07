@@ -13,6 +13,6 @@ typedef struct {
 
 void initialise_wm(wm_t *wm);
 
-void handle_key_events(wm_t *wm, KeySym ksym);
+void handle_key_events(wm_t *wm, XEvent *e);
 
 #endif // !MEADOW_H
