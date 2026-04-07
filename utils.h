@@ -2,7 +2,9 @@
 #define MEADOW_UTILS_H
 
 #include "meadow.h"
+#include <X11/X.h>
 
 void grab_key_with_string(wm_t *wm, const char *k, unsigned int mod);
+KeyCode gen_keycode_from_string(wm_t *wm, const char *k, unsigned int mod);
 
 #endif // ! MEADOW_UTILS_H
