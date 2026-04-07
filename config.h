@@ -4,7 +4,9 @@
 #include "utils.h"
 
 #define MODIFIER SUPER_KEY
+
 #define WM_EXIT_KEY "q"
+#define APP_LAUNCHER_KEY "space"
 
 #define APP_LAUNCHER "dmenu_run"
 

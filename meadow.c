@@ -24,24 +24,24 @@ void initialse_wm(wm_t *wm) {
   // setting to AnyModifier will ensure that a request will be sent regardless
   // of the modifier used
   grab_key_with_string(wm, WM_EXIT_KEY, AnyModifier);
-  grab_key_with_string(
-      wm, "space",
-      Mod4Mask); // this request will only be sent if the super key is used
+  grab_key_with_string(wm, APP_LAUNCHER_KEY, AnyModifier);
   XSync(wm->display, 0);
 }
 
 void handle_key_events(wm_t *wm, XEvent *e) {
+  KeyCode kcode = e->xkey.keycode;
+  unsigned int state = e->xkey.state;
   // note to self that this is solely for checking and the modifier is actually
   // important
   KeyCode quit_kcode = gen_keycode_from_string(wm, WM_EXIT_KEY, MODIFIER);
-  KeyCode debug_kcode = gen_keycode_from_string(wm, "q", AnyModifier);
-  if (e->xkey.state == MODIFIER) {
-    if (e->xkey.keycode == quit_kcode) {
+  KeyCode app_launcher_kcode =
+      gen_keycode_from_string(wm, APP_LAUNCHER_KEY, MODIFIER);
+  if (state == MODIFIER) {
+    if (kcode == quit_kcode) {
       exit(0);
+    } else if (kcode == app_launcher_kcode) {
+      system(APP_LAUNCHER);
     }
-  }
-  if (e->xkey.keycode == debug_kcode) {
-    printf("debug key hit!\n");
   }
 }
 
