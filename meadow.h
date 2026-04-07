@@ -6,6 +6,7 @@
 typedef struct {
   Display *display;
   Window root;
+  Cursor cursor;
   int width, height;
 } wm_t;
 
