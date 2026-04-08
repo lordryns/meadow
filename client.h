@@ -6,6 +6,7 @@
 
 typedef struct client_t {
   Window window;
+  Window frame;
   int x, y;
   int width, height;
   struct client_t *next;

@@ -6,6 +6,7 @@
 #include <X11/Xlib.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 void initialse_wm(wm_t *wm) {
@@ -51,8 +52,13 @@ void handle_key_events(wm_t *wm, XEvent *e) {
   }
 }
 
-void on_window_destroy_event(XEvent *e) {
-  // todo: check for a way to delete client->frame on destroy notify.
+void on_window_destroy_event(wm_t *wm, XEvent *e) {
+  for (client_t *it = wm->window_list_head; it != NULL; it = it->next) {
+    if (it->window == e->xdestroywindow.window) {
+      // printf("destroy event detected!\n");
+      // XDestroyWindow(wm->display, it->frame);
+    }
+  }
 }
 
 int main(void) {
@@ -78,13 +84,15 @@ int main(void) {
                      CurrentTime);
     }
     case DestroyNotify: {
-      on_window_destroy_event(&e);
+      on_window_destroy_event(&wm, &e);
     }
     case ButtonPress: {
       XSetInputFocus(wm.display, e.xbutton.window, RevertToParent, CurrentTime);
       XAllowEvents(wm.display, ReplayPointer, CurrentTime);
-
-      XSync(wm.display, 0);
+    }
+    case ButtonRelease: {
+    }
+    case MotionNotify: {
     }
     }
     XSync(wm.display, 0);

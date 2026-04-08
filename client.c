@@ -23,6 +23,10 @@ client_t *grab_client_window(wm_t *wm, XEvent *e) {
     c->x = 0;
   }
   c->y = 0;
+  c->frame = XCreateSimpleWindow(wm->display, wm->root, c->x, c->y, c->width,
+                                 c->height, 2, WhitePixel(wm->display, 0),
+                                 BlackPixel(wm->display, 0));
+
   c->next = wm->window_list_head;
   wm->window_list_head = c;
 
@@ -30,13 +34,10 @@ client_t *grab_client_window(wm_t *wm, XEvent *e) {
 }
 
 void render_client(wm_t *wm, client_t *c) {
-  Window win = XCreateSimpleWindow(wm->display, wm->root, c->x, c->y, c->width,
-                                   c->height, 2, WhitePixel(wm->display, 0),
-                                   BlackPixel(wm->display, 0));
-
-  XReparentWindow(wm->display, c->window, win, 0, 0);
-  XMapWindow(wm->display, win);
+  XReparentWindow(wm->display, c->window, c->frame, 0, 0);
+  XMapWindow(wm->display, c->frame);
   XMapWindow(wm->display, c->window);
+
   XSetInputFocus(wm->display, c->window, RevertToParent, CurrentTime);
   XSync(wm->display, 0);
 

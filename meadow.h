@@ -14,13 +14,14 @@ typedef struct {
   Window root;
   Cursor cursor;
   int width, height;
-  struct client_t *window_list_head;
+  struct client_t
+      *window_list_head; // this is the head of the client linked list
 } wm_t;
 
 void initialise_wm(wm_t *wm);
 
 void handle_key_events(wm_t *wm, XEvent *e);
 
-void on_window_destroy_event(XEvent *e);
+void on_window_destroy_event(wm_t *wm, XEvent *e);
 
 #endif // !MEADOW_H
