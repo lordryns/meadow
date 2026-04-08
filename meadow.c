@@ -51,6 +51,10 @@ void handle_key_events(wm_t *wm, XEvent *e) {
   }
 }
 
+void on_window_destroy_event(XEvent *e) {
+  // todo: check for a way to delete client->frame on destroy notify.
+}
+
 int main(void) {
   wm_t wm;
   initialse_wm(&wm);
@@ -73,6 +77,9 @@ int main(void) {
     case EnterNotify: {
       XSetInputFocus(wm.display, e.xcrossing.window, RevertToParent,
                      CurrentTime);
+    }
+    case DestroyNotify: {
+      on_window_destroy_event(&e);
     }
     case ButtonPress: {
       XSetInputFocus(wm.display, e.xbutton.window, RevertToParent, CurrentTime);

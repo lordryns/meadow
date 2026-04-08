@@ -21,4 +21,6 @@ void initialise_wm(wm_t *wm);
 
 void handle_key_events(wm_t *wm, XEvent *e);
 
+void on_window_destroy_event(XEvent *e);
+
 #endif // !MEADOW_H
