@@ -26,6 +26,7 @@ client_t *grab_client_window(wm_t *wm, XEvent *e) {
   c->frame = XCreateSimpleWindow(wm->display, wm->root, c->x, c->y, c->width,
                                  c->height, 2, WhitePixel(wm->display, 0),
                                  BlackPixel(wm->display, 0));
+  XSelectInput(wm->display, c->frame, ButtonPressMask | EnterWindowMask);
 
   c->next = wm->window_list_head;
   wm->window_list_head = c;

@@ -27,9 +27,15 @@ void initialse_wm(wm_t *wm) {
   grab_key_with_string(wm, WM_EXIT_KEY, MODIFIER);
   grab_key_with_string(wm, APP_LAUNCHER_KEY, MODIFIER);
   grab_key_with_string(wm, "c", MODIFIER);
+  grab_key_with_string(wm, "Left", MODIFIER);
+  grab_key_with_string(wm, "Right", MODIFIER);
+  grab_key_with_string(wm, "Up", MODIFIER);
+  grab_key_with_string(wm, "Down", MODIFIER);
   XSync(wm->display, 0);
 
   wm->window_list_head = NULL;
+  wm->move_client = false;
+  wm->focused_client = None;
 }
 
 void handle_key_events(wm_t *wm, XEvent *e) {
@@ -41,6 +47,13 @@ void handle_key_events(wm_t *wm, XEvent *e) {
   KeyCode app_launcher_kcode =
       gen_keycode_from_string(wm, APP_LAUNCHER_KEY, MODIFIER);
   KeyCode kill_client_kcode = gen_keycode_from_string(wm, "c", MODIFIER);
+  KeyCode move_left_client_kcode =
+      gen_keycode_from_string(wm, "Left", MODIFIER);
+  KeyCode move_right_client_kcode =
+      gen_keycode_from_string(wm, "Right", MODIFIER);
+  KeyCode move_up_client_kcode = gen_keycode_from_string(wm, "Up", MODIFIER);
+  KeyCode move_down_client_kcode =
+      gen_keycode_from_string(wm, "Down", MODIFIER);
   if (state == MODIFIER) {
     if (kcode == quit_kcode) {
       exit(0);
@@ -48,6 +61,22 @@ void handle_key_events(wm_t *wm, XEvent *e) {
       system(APP_LAUNCHER);
     } else if (kcode == kill_client_kcode) {
       XDestroyWindow(wm->display, e->xkey.window);
+    }
+
+    if (wm->focused_client != None && wm->focused_client->frame != wm->root) {
+
+      if (kcode == move_left_client_kcode) {
+        wm->focused_client->x -= 10;
+      } else if (kcode == move_right_client_kcode) {
+        wm->focused_client->x += 10;
+      } else if (kcode == move_up_client_kcode) {
+        wm->focused_client->y -= 10;
+      } else if (kcode == move_down_client_kcode) {
+        wm->focused_client->y += 10;
+      }
+
+      XMoveWindow(wm->display, wm->focused_client->frame, wm->focused_client->x,
+                  wm->focused_client->y);
     }
   }
 }
@@ -80,6 +109,15 @@ int main(void) {
     case UnmapNotify: {
     }
     case EnterNotify: {
+      for (client_t *it = wm.window_list_head; it; it = it->next) {
+        if (it->window == e.xcrossing.window) {
+          wm.focused_client = it;
+          XSetWindowBorderWidth(wm.display, it->frame, 2);
+          XRaiseWindow(wm.display, it->frame);
+        } else {
+          XSetWindowBorderWidth(wm.display, it->frame, 0);
+        }
+      }
       XSetInputFocus(wm.display, e.xcrossing.window, RevertToParent,
                      CurrentTime);
     }
@@ -87,11 +125,19 @@ int main(void) {
       on_window_destroy_event(&wm, &e);
     }
     case ButtonPress: {
+      for (client_t *it = wm.window_list_head; it; it = it->next) {
+        if (it->window == e.xbutton.window) {
+          wm.focused_client = it;
+          XSetWindowBorderWidth(wm.display, it->frame, 2);
+          XRaiseWindow(wm.display, it->frame);
+        } else {
+          XSetWindowBorderWidth(wm.display, it->frame, 0);
+        }
+      }
       XSetInputFocus(wm.display, e.xbutton.window, RevertToParent, CurrentTime);
       XAllowEvents(wm.display, ReplayPointer, CurrentTime);
     }
-    case ButtonRelease: {
-    }
+
     case MotionNotify: {
     }
     }
