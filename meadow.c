@@ -72,7 +72,6 @@ int main(void) {
       render_client(&wm, client);
     }
     case UnmapNotify: {
-      XUnmapWindow(wm.display, e.xunmap.window);
     }
     case EnterNotify: {
       XSetInputFocus(wm.display, e.xcrossing.window, RevertToParent,
