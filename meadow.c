@@ -25,6 +25,7 @@ void initialse_wm(wm_t *wm) {
   // of the modifier used
   grab_key_with_string(wm, WM_EXIT_KEY, MODIFIER);
   grab_key_with_string(wm, APP_LAUNCHER_KEY, MODIFIER);
+  grab_key_with_string(wm, "c", MODIFIER);
   XSync(wm->display, 0);
 
   wm->window_list_head = NULL;
@@ -38,11 +39,14 @@ void handle_key_events(wm_t *wm, XEvent *e) {
   KeyCode quit_kcode = gen_keycode_from_string(wm, WM_EXIT_KEY, MODIFIER);
   KeyCode app_launcher_kcode =
       gen_keycode_from_string(wm, APP_LAUNCHER_KEY, MODIFIER);
+  KeyCode kill_client_kcode = gen_keycode_from_string(wm, "c", MODIFIER);
   if (state == MODIFIER) {
     if (kcode == quit_kcode) {
       exit(0);
     } else if (kcode == app_launcher_kcode) {
       system(APP_LAUNCHER);
+    } else if (kcode == kill_client_kcode) {
+      XDestroyWindow(wm->display, e->xkey.window);
     }
   }
 }
@@ -62,6 +66,9 @@ int main(void) {
     case MapRequest: {
       client_t *client = grab_client_window(&wm, &e);
       render_client(&wm, client);
+    }
+    case UnmapNotify: {
+      XUnmapWindow(wm.display, e.xunmap.window);
     }
     case EnterNotify: {
       XSetInputFocus(wm.display, e.xcrossing.window, RevertToParent,

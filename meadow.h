@@ -4,6 +4,9 @@
 #include <X11/X.h>
 #include <X11/Xlib.h>
 
+// this is a trick i found out worked so i used it
+// i couldn't import the client_t from client.h because of circular import
+// limitations but apparently this works
 struct client_t;
 
 typedef struct {
