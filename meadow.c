@@ -23,8 +23,8 @@ void initialse_wm(wm_t *wm) {
 
   // setting to AnyModifier will ensure that a request will be sent regardless
   // of the modifier used
-  grab_key_with_string(wm, WM_EXIT_KEY, AnyModifier);
-  grab_key_with_string(wm, APP_LAUNCHER_KEY, AnyModifier);
+  grab_key_with_string(wm, WM_EXIT_KEY, MODIFIER);
+  grab_key_with_string(wm, APP_LAUNCHER_KEY, MODIFIER);
   XSync(wm->display, 0);
 
   wm->window_list_head = NULL;
@@ -66,6 +66,12 @@ int main(void) {
     case EnterNotify: {
       XSetInputFocus(wm.display, e.xcrossing.window, RevertToParent,
                      CurrentTime);
+    }
+    case ButtonPress: {
+      XSetInputFocus(wm.display, e.xbutton.window, RevertToParent, CurrentTime);
+      XAllowEvents(wm.display, ReplayPointer, CurrentTime);
+
+      XSync(wm.display, 0);
     }
     }
     XSync(wm.display, 0);

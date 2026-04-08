@@ -3,7 +3,6 @@
 #include "utils.h"
 #include <X11/X.h>
 #include <X11/Xlib.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 client_t *grab_client_window(wm_t *wm, XEvent *e) {
