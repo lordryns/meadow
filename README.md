@@ -35,8 +35,9 @@ make build && make run
 
 ## Default key bindings 
 
-- Super + Q = Exit window manager
-- Super + Space = Open application launcher (dmenu by default but can be changed in `config.h`)
-
+- Mod + Q = Exit window manager
+- Mod + Space = Open application launcher (dmenu by default but can be changed in `config.h`)
+- Mod + R to toggle `resize mode`. When in resize mode, use arrow keys to resize window 
+- Mod + Arrow keys to move windows
 
 Have fun :)
