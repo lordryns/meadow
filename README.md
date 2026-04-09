@@ -2,6 +2,10 @@
 Tiny window manager for X11
 
 
+> [!IMPORTANT]
+> Original repo is stored at [codeberg](https://codeberg.org/osakpawan/meadow), Any other source is a mirror.
+
+
 It is safe to open the window manager directly from the tty but please note that it is riddled with bugs and at this stage you can not open any applications.
 
 ### Actual features 
