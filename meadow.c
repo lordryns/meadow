@@ -60,7 +60,7 @@ void handle_key_events(wm_t *wm, XEvent *e) {
     } else if (kcode == app_launcher_kcode) {
       system(APP_LAUNCHER);
     } else if (kcode == kill_client_kcode) {
-      XDestroyWindow(wm->display, e->xkey.window);
+      XDestroyWindow(wm->display, wm->focused_client->window);
     }
 
     if (wm->focused_client != None && wm->focused_client->frame != wm->root) {
@@ -83,9 +83,9 @@ void handle_key_events(wm_t *wm, XEvent *e) {
 
 void on_window_destroy_event(wm_t *wm, XEvent *e) {
   for (client_t *it = wm->window_list_head; it != NULL; it = it->next) {
-    if (it->window == e->xdestroywindow.window) {
+    if (it->frame == e->xdestroywindow.window) {
       // printf("destroy event detected!\n");
-      // XDestroyWindow(wm->display, it->frame);
+      XDestroyWindow(wm->display, it->frame);
     }
   }
 }

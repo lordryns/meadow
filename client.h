@@ -15,4 +15,6 @@ typedef struct client_t {
 client_t *grab_client_window(wm_t *wm, XEvent *e);
 void render_client(wm_t *wm, client_t *c);
 
+void remove_client_from_linked_list(client_t **head, client_t *client);
+
 #endif // !MEADOW_CLIENT_H
