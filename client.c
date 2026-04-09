@@ -23,7 +23,8 @@ client_t *grab_client_window(wm_t *wm, XEvent *e) {
                                  c->height, 2, WhitePixel(wm->display, 0),
                                  BlackPixel(wm->display, 0));
   XSelectInput(wm->display, c->frame,
-               ButtonPressMask | EnterWindowMask | StructureNotifyMask);
+               ButtonPressMask | EnterWindowMask | StructureNotifyMask |
+                   PointerMotionMask | ButtonPressMask | ButtonReleaseMask);
 
   c->next = wm->window_list_head;
   wm->window_list_head = c;
@@ -36,7 +37,6 @@ void render_client(wm_t *wm, client_t *c) {
   XMapWindow(wm->display, c->frame);
   XMapWindow(wm->display, c->window);
 
-  XSetInputFocus(wm->display, c->window, RevertToParent, CurrentTime);
   XSync(wm->display, 0);
 
   for (client_t *it = wm->window_list_head; it != NULL; it = it->next) {

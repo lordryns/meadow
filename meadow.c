@@ -14,13 +14,16 @@ void initialse_wm(wm_t *wm) {
   wm->root = XDefaultRootWindow(wm->display);
   wm->cursor = XCreateFontCursor(wm->display, XC_left_ptr);
 
+  XGrabServer(wm->display);
+
   XDefineCursor(wm->display, wm->root, wm->cursor);
   XGrabButton(wm->display, Button1, 0, wm->root, False, ButtonPressMask,
               GrabModeSync, GrabModeAsync, wm->root, wm->cursor);
 
   XClearWindow(wm->display, wm->root);
   XSelectInput(wm->display, wm->root,
-               SubstructureNotifyMask | SubstructureRedirectMask);
+               SubstructureNotifyMask | SubstructureRedirectMask |
+                   ButtonPressMask | ButtonReleaseMask | PointerMotionMask);
 
   // setting to AnyModifier will ensure that a request will be sent regardless
   // of the modifier used
@@ -36,6 +39,9 @@ void initialse_wm(wm_t *wm) {
   wm->window_list_head = NULL;
   wm->move_client = false;
   wm->focused_client = None;
+  wm->mod_active = false;
+
+  XUngrabServer(wm->display);
 }
 
 void handle_key_events(wm_t *wm, XEvent *e) {
@@ -61,6 +67,7 @@ void handle_key_events(wm_t *wm, XEvent *e) {
       system(APP_LAUNCHER);
     } else if (kcode == kill_client_kcode) {
       XDestroyWindow(wm->display, wm->focused_client->window);
+      on_window_destroy_event(wm, e);
     }
 
     if (wm->focused_client != None && wm->focused_client->frame != wm->root) {
@@ -78,13 +85,17 @@ void handle_key_events(wm_t *wm, XEvent *e) {
       XMoveWindow(wm->display, wm->focused_client->frame, wm->focused_client->x,
                   wm->focused_client->y);
     }
-  }
+  } else
+    wm->mod_active = false;
 }
 
 void on_window_destroy_event(wm_t *wm, XEvent *e) {
+  printf("destroyed =  0x%lx\n\n", e->xdestroywindow.window);
   for (client_t *it = wm->window_list_head; it != NULL; it = it->next) {
-    if (it->frame == e->xdestroywindow.window) {
+    printf("win =  0x%lx | frame =  0x%lx\n", it->window, it->frame);
+    if (it->window == e->xdestroywindow.window) {
       // printf("destroy event detected!\n");
+      XUnmapWindow(wm->display, it->frame);
       XDestroyWindow(wm->display, it->frame);
     }
   }
@@ -105,8 +116,35 @@ int main(void) {
     case MapRequest: {
       client_t *client = grab_client_window(&wm, &e);
       render_client(&wm, client);
+      break;
+    }
+    case ConfigureRequest: {
+      XConfigureRequestEvent *ev = &e.xconfigurerequest;
+      XWindowChanges changes;
+      changes.x = ev->x;
+      changes.y = ev->y;
+      changes.width = ev->width;
+      changes.height = ev->height;
+      changes.border_width = ev->border_width;
+      changes.sibling = ev->above;
+      changes.stack_mode = ev->detail;
+      XConfigureWindow(wm.display, ev->window, ev->value_mask, &changes);
+
+      XConfigureEvent ce;
+      ce.x = ev->x;
+      ce.y = ev->y;
+      ce.width = ev->width;
+      ce.height = ev->height;
+      ce.border_width = ev->border_width;
+      ce.above = None;
+      ce.override_redirect = False;
+
+      XSendEvent(wm.display, ev->window, False, StructureNotifyMask,
+                 (XEvent *)&ce);
+      break;
     }
     case UnmapNotify: {
+      break;
     }
     case EnterNotify: {
       for (client_t *it = wm.window_list_head; it; it = it->next) {
@@ -118,15 +156,19 @@ int main(void) {
           XSetWindowBorderWidth(wm.display, it->frame, 0);
         }
       }
-      XSetInputFocus(wm.display, e.xcrossing.window, RevertToParent,
-                     CurrentTime);
+      // XSetInputFocus(wm.display, e.xcrossing.window, RevertToParent,
+      //              CurrentTime);
+      break;
     }
     case DestroyNotify: {
       on_window_destroy_event(&wm, &e);
+      break;
     }
     case ButtonPress: {
+      printf("press =  0x%lx\n\n", e.xbutton.window);
       for (client_t *it = wm.window_list_head; it; it = it->next) {
-        if (it->window == e.xbutton.window) {
+        printf("win =  0x%lx | frame =  0x%lx\n", it->window, it->frame);
+        if (it->frame == e.xbutton.window) {
           wm.focused_client = it;
           XSetWindowBorderWidth(wm.display, it->frame, 2);
           XRaiseWindow(wm.display, it->frame);
@@ -134,11 +176,14 @@ int main(void) {
           XSetWindowBorderWidth(wm.display, it->frame, 0);
         }
       }
-      XSetInputFocus(wm.display, e.xbutton.window, RevertToParent, CurrentTime);
+      XSetInputFocus(wm.display, wm.focused_client->window, RevertToParent,
+                     CurrentTime);
       XAllowEvents(wm.display, ReplayPointer, CurrentTime);
+      break;
     }
 
     case MotionNotify: {
+      break;
     }
     }
     XSync(wm.display, 0);

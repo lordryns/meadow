@@ -19,6 +19,7 @@ typedef struct {
       *window_list_head; // this is the head of the client linked list
   struct client_t *focused_client;
   bool move_client;
+  bool mod_active;
 } wm_t;
 
 void initialise_wm(wm_t *wm);
