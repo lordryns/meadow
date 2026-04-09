@@ -27,13 +27,14 @@ void initialse_wm(wm_t *wm) {
 
   // setting to AnyModifier will ensure that a request will be sent regardless
   // of the modifier used
-  grab_key_with_string(wm, WM_EXIT_KEY, MODIFIER);
-  grab_key_with_string(wm, APP_LAUNCHER_KEY, MODIFIER);
-  grab_key_with_string(wm, "c", MODIFIER);
-  grab_key_with_string(wm, "Left", MODIFIER);
-  grab_key_with_string(wm, "Right", MODIFIER);
-  grab_key_with_string(wm, "Up", MODIFIER);
-  grab_key_with_string(wm, "Down", MODIFIER);
+  grab_key_with_string(wm, WM_EXIT_KEY, AnyModifier);
+  grab_key_with_string(wm, APP_LAUNCHER_KEY, AnyModifier);
+  grab_key_with_string(wm, "c", AnyModifier);
+  grab_key_with_string(wm, "Left", AnyModifier);
+  grab_key_with_string(wm, "Right", AnyModifier);
+  grab_key_with_string(wm, "Up", AnyModifier);
+  grab_key_with_string(wm, "Down", AnyModifier);
+  grab_key_with_string(wm, "r", AnyModifier);
   XSync(wm->display, 0);
 
   wm->window_list_head = NULL;
@@ -60,6 +61,13 @@ void handle_key_events(wm_t *wm, XEvent *e) {
   KeyCode move_up_client_kcode = gen_keycode_from_string(wm, "Up", MODIFIER);
   KeyCode move_down_client_kcode =
       gen_keycode_from_string(wm, "Down", MODIFIER);
+  KeyCode resize_client_kcode = gen_keycode_from_string(wm, "r", MODIFIER);
+  KeyCode left_client_kcode = gen_keycode_from_string(wm, "Left", AnyModifier);
+  KeyCode right_client_kcode =
+      gen_keycode_from_string(wm, "Right", AnyModifier);
+  KeyCode up_client_kcode = gen_keycode_from_string(wm, "Up", AnyModifier);
+  KeyCode down_client_kcode = gen_keycode_from_string(wm, "Down", AnyModifier);
+
   if (state == MODIFIER) {
     if (kcode == quit_kcode) {
       exit(0);
@@ -68,6 +76,8 @@ void handle_key_events(wm_t *wm, XEvent *e) {
     } else if (kcode == kill_client_kcode) {
       XDestroyWindow(wm->display, wm->focused_client->window);
       on_window_destroy_event(wm, e);
+    } else if (kcode == resize_client_kcode) {
+      wm->resize_client = !wm->resize_client;
     }
 
     if (wm->focused_client != None && wm->focused_client->frame != wm->root) {
@@ -85,8 +95,24 @@ void handle_key_events(wm_t *wm, XEvent *e) {
       XMoveWindow(wm->display, wm->focused_client->frame, wm->focused_client->x,
                   wm->focused_client->y);
     }
-  } else
-    wm->mod_active = false;
+  }
+
+  if (wm->resize_client) {
+    printf("resize mode active.\n");
+    if (kcode == left_client_kcode) {
+      wm->focused_client->width -= 10;
+    } else if (kcode == right_client_kcode) {
+      wm->focused_client->width += 10;
+    } else if (kcode == up_client_kcode) {
+      wm->focused_client->height -= 10;
+    } else if (kcode == down_client_kcode) {
+      wm->focused_client->height += 10;
+    }
+    XResizeWindow(wm->display, wm->focused_client->window,
+                  wm->focused_client->width, wm->focused_client->height);
+    XResizeWindow(wm->display, wm->focused_client->frame,
+                  wm->focused_client->width, wm->focused_client->height);
+  }
 }
 
 void on_window_destroy_event(wm_t *wm, XEvent *e) {
@@ -186,6 +212,7 @@ int main(void) {
       break;
     }
     }
+
     XSync(wm.display, 0);
   }
   return 0;

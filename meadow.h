@@ -20,6 +20,7 @@ typedef struct {
   struct client_t *focused_client;
   bool move_client;
   bool mod_active;
+  bool resize_client;
 } wm_t;
 
 void initialise_wm(wm_t *wm);
