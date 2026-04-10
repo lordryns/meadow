@@ -23,8 +23,8 @@ client_t *grab_client_window(wm_t *wm, XEvent *e) {
                                  c->height, 2, WhitePixel(wm->display, 0),
                                  BlackPixel(wm->display, 0));
   XSelectInput(wm->display, c->frame,
-               ButtonPressMask | EnterWindowMask | StructureNotifyMask |
-                   PointerMotionMask | ButtonPressMask | ButtonReleaseMask);
+               EnterWindowMask | LeaveWindowMask | ButtonPressMask |
+                   ButtonReleaseMask);
 
   c->next = wm->window_list_head;
   wm->window_list_head = c;

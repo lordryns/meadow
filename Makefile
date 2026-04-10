@@ -3,7 +3,7 @@ CFLAGS = -Wextra -Wall -Wpedantic
 LIBS = -lX11
 TARGET = meadow.c utils.c config.c client.c
 
-build: $(TARGET)
+build:
 	$(CC) -o $(OUTPUT) $(CFLAGS) $(TARGET) $(LIBS)
 
 run:

@@ -18,6 +18,7 @@ typedef struct {
   struct client_t
       *window_list_head; // this is the head of the client linked list
   struct client_t *focused_client;
+  struct client_t *hovered_client;
   bool move_client;
   bool mod_active;
   bool resize_client;
@@ -27,6 +28,6 @@ void initialise_wm(wm_t *wm);
 
 void handle_key_events(wm_t *wm, XEvent *e);
 
-void on_window_destroy_event(wm_t *wm, XEvent *e);
+void on_window_destroy_event(wm_t *wm, XDestroyWindowEvent *ev);
 
 #endif // !MEADOW_H
