@@ -44,4 +44,13 @@ make build && make run
 - Mod + R to toggle `resize mode`. When in resize mode, use arrow keys to resize window 
 - Mod + M to toggle `move mode`. When in move mode, use arrow keys to move window 
 
+
+## Window colour codes  
+Window borders have different colours based on input mode 
+
+- In `resize mode` the window border will have a green colour
+- In `move mode` the window border will have a red colour
+- When window is inactive, it will have a white border 
+- When window is active, it will have a blue border
+
 Have fun :)
