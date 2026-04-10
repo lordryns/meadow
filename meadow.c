@@ -27,14 +27,14 @@ void initialse_wm(wm_t *wm) {
 
   // setting to AnyModifier will ensure that a request will be sent regardless
   // of the modifier used
-  grab_key_with_string(wm, WM_EXIT_KEY, AnyModifier);
-  grab_key_with_string(wm, APP_LAUNCHER_KEY, AnyModifier);
-  grab_key_with_string(wm, "c", AnyModifier);
+  grab_key_with_string(wm, WM_EXIT_KEY, MODIFIER);
+  grab_key_with_string(wm, APP_LAUNCHER_KEY, MODIFIER);
+  grab_key_with_string(wm, "c", MODIFIER);
   grab_key_with_string(wm, "Left", AnyModifier);
   grab_key_with_string(wm, "Right", AnyModifier);
   grab_key_with_string(wm, "Up", AnyModifier);
   grab_key_with_string(wm, "Down", AnyModifier);
-  grab_key_with_string(wm, "r", AnyModifier);
+  grab_key_with_string(wm, "r", MODIFIER);
   XSync(wm->display, 0);
 
   wm->window_list_head = NULL;
