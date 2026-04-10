@@ -81,6 +81,7 @@ void handle_key_events(wm_t *wm, XEvent *e) {
     }
 
     if (wm->move_client && wm->focused_client != NULL) {
+      XSetWindowBorder(wm->display, wm->focused_client->frame, 0xC91400);
       if (kcode == left_client_kcode) {
         wm->focused_client->x -= 10;
       } else if (kcode == right_client_kcode) {
@@ -96,6 +97,7 @@ void handle_key_events(wm_t *wm, XEvent *e) {
     }
 
     if (wm->resize_client && wm->focused_client != NULL) {
+      XSetWindowBorder(wm->display, wm->focused_client->frame, 0x008C0C);
       if (kcode == left_client_kcode) {
         wm->focused_client->width -= 10;
       } else if (kcode == right_client_kcode) {
@@ -110,6 +112,11 @@ void handle_key_events(wm_t *wm, XEvent *e) {
       XResizeWindow(wm->display, wm->focused_client->frame,
                     wm->focused_client->width, wm->focused_client->height);
     }
+  }
+
+  if (!wm->resize_client && !wm->move_client) {
+    for (client_t *it = wm->window_list_head; it != NULL; it = it->next)
+      XSetWindowBorder(wm->display, it->frame, WhitePixel(wm->display, 0));
   }
 }
 
