@@ -3,6 +3,8 @@
 
 #include "utils.h"
 
+#define WALLPAPER ""
+
 #define MODIFIER SUPER_KEY
 
 #define WM_EXIT_KEY "q"

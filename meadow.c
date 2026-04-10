@@ -172,10 +172,10 @@ int main(void) {
       for (client_t *it = wm.window_list_head; it; it = it->next) {
         if (it->window == e.xcrossing.window) {
           wm.focused_client = it;
-          XSetWindowBorderWidth(wm.display, it->frame, 2);
+          XSetWindowBorder(wm.display, it->frame, 0x5E85BF);
           XRaiseWindow(wm.display, it->frame);
         } else {
-          XSetWindowBorderWidth(wm.display, it->frame, 0);
+          XSetWindowBorder(wm.display, it->frame, WhitePixel(wm.display, 0));
         }
       }
       // XSetInputFocus(wm.display, e.xcrossing.window, RevertToParent,
@@ -192,10 +192,10 @@ int main(void) {
         printf("win =  0x%lx | frame =  0x%lx\n", it->window, it->frame);
         if (it->frame == e.xbutton.window) {
           wm.focused_client = it;
-          XSetWindowBorderWidth(wm.display, it->frame, 2);
+          XSetWindowBorder(wm.display, it->frame, 0x5E85BF);
           XRaiseWindow(wm.display, it->frame);
         } else {
-          XSetWindowBorderWidth(wm.display, it->frame, 0);
+          XSetWindowBorder(wm.display, it->frame, WhitePixel(wm.display, 0));
         }
       }
       XSetInputFocus(wm.display, wm.focused_client->window, RevertToParent,
