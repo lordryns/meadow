@@ -219,6 +219,8 @@ int main(void) {
     }
 
     case MotionNotify: {
+      wm.mouse_x = e.xmotion.x_root;
+      wm.mouse_y = e.xmotion.y_root;
       break;
     }
     }

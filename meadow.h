@@ -22,6 +22,7 @@ typedef struct {
   bool move_client;
   bool mod_active;
   bool resize_client;
+  int mouse_x, mouse_y;
 } wm_t;
 
 void initialise_wm(wm_t *wm);

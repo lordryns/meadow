@@ -17,8 +17,8 @@ client_t *grab_client_window(wm_t *wm, XEvent *e) {
   c->window = win;
   c->width = win_attr.width;
   c->height = win_attr.height;
-  c->x = 100;
-  c->y = 0;
+  c->x = win_attr.x;
+  c->y = win_attr.y;
   c->frame = XCreateSimpleWindow(wm->display, wm->root, c->x, c->y, c->width,
                                  c->height, 2, WhitePixel(wm->display, 0),
                                  BlackPixel(wm->display, 0));
