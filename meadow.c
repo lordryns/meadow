@@ -30,11 +30,12 @@ void initialse_wm(wm_t *wm) {
   grab_key_with_string(wm, WM_EXIT_KEY, MODIFIER);
   grab_key_with_string(wm, APP_LAUNCHER_KEY, MODIFIER);
   grab_key_with_string(wm, "c", MODIFIER);
-  grab_key_with_string(wm, "Left", AnyModifier);
-  grab_key_with_string(wm, "Right", AnyModifier);
-  grab_key_with_string(wm, "Up", AnyModifier);
-  grab_key_with_string(wm, "Down", AnyModifier);
+  grab_key_with_string(wm, "Left", MODIFIER);
+  grab_key_with_string(wm, "Right", MODIFIER);
+  grab_key_with_string(wm, "Up", MODIFIER);
+  grab_key_with_string(wm, "Down", MODIFIER);
   grab_key_with_string(wm, "r", MODIFIER);
+  grab_key_with_string(wm, "m", MODIFIER);
   XSync(wm->display, 0);
 
   wm->window_list_head = NULL;
@@ -54,19 +55,12 @@ void handle_key_events(wm_t *wm, XEvent *e) {
   KeyCode app_launcher_kcode =
       gen_keycode_from_string(wm, APP_LAUNCHER_KEY, MODIFIER);
   KeyCode kill_client_kcode = gen_keycode_from_string(wm, "c", MODIFIER);
-  KeyCode move_left_client_kcode =
-      gen_keycode_from_string(wm, "Left", MODIFIER);
-  KeyCode move_right_client_kcode =
-      gen_keycode_from_string(wm, "Right", MODIFIER);
-  KeyCode move_up_client_kcode = gen_keycode_from_string(wm, "Up", MODIFIER);
-  KeyCode move_down_client_kcode =
-      gen_keycode_from_string(wm, "Down", MODIFIER);
   KeyCode resize_client_kcode = gen_keycode_from_string(wm, "r", MODIFIER);
-  KeyCode left_client_kcode = gen_keycode_from_string(wm, "Left", AnyModifier);
-  KeyCode right_client_kcode =
-      gen_keycode_from_string(wm, "Right", AnyModifier);
-  KeyCode up_client_kcode = gen_keycode_from_string(wm, "Up", AnyModifier);
-  KeyCode down_client_kcode = gen_keycode_from_string(wm, "Down", AnyModifier);
+  KeyCode move_client_kcode = gen_keycode_from_string(wm, "m", MODIFIER);
+  KeyCode left_client_kcode = gen_keycode_from_string(wm, "Left", MODIFIER);
+  KeyCode right_client_kcode = gen_keycode_from_string(wm, "Right", MODIFIER);
+  KeyCode up_client_kcode = gen_keycode_from_string(wm, "Up", MODIFIER);
+  KeyCode down_client_kcode = gen_keycode_from_string(wm, "Down", MODIFIER);
 
   if (state == MODIFIER) {
     if (kcode == quit_kcode) {
@@ -78,40 +72,42 @@ void handle_key_events(wm_t *wm, XEvent *e) {
       on_window_destroy_event(wm, e);
     } else if (kcode == resize_client_kcode) {
       wm->resize_client = !wm->resize_client;
+      wm->move_client = false;
+    } else if (kcode == move_client_kcode) {
+      wm->move_client = !wm->move_client;
+      wm->resize_client = false;
     }
 
-    if (wm->focused_client != None && wm->focused_client->frame != wm->root) {
-
-      if (kcode == move_left_client_kcode) {
+    if (wm->move_client) {
+      if (kcode == left_client_kcode) {
         wm->focused_client->x -= 10;
-      } else if (kcode == move_right_client_kcode) {
+      } else if (kcode == right_client_kcode) {
         wm->focused_client->x += 10;
-      } else if (kcode == move_up_client_kcode) {
+      } else if (kcode == up_client_kcode) {
         wm->focused_client->y -= 10;
-      } else if (kcode == move_down_client_kcode) {
+      } else if (kcode == down_client_kcode) {
         wm->focused_client->y += 10;
       }
 
       XMoveWindow(wm->display, wm->focused_client->frame, wm->focused_client->x,
                   wm->focused_client->y);
     }
-  }
 
-  if (wm->resize_client) {
-    printf("resize mode active.\n");
-    if (kcode == left_client_kcode) {
-      wm->focused_client->width -= 10;
-    } else if (kcode == right_client_kcode) {
-      wm->focused_client->width += 10;
-    } else if (kcode == up_client_kcode) {
-      wm->focused_client->height -= 10;
-    } else if (kcode == down_client_kcode) {
-      wm->focused_client->height += 10;
+    if (wm->resize_client) {
+      if (kcode == left_client_kcode) {
+        wm->focused_client->width -= 10;
+      } else if (kcode == right_client_kcode) {
+        wm->focused_client->width += 10;
+      } else if (kcode == up_client_kcode) {
+        wm->focused_client->height -= 10;
+      } else if (kcode == down_client_kcode) {
+        wm->focused_client->height += 10;
+      }
+      XResizeWindow(wm->display, wm->focused_client->window,
+                    wm->focused_client->width, wm->focused_client->height);
+      XResizeWindow(wm->display, wm->focused_client->frame,
+                    wm->focused_client->width, wm->focused_client->height);
     }
-    XResizeWindow(wm->display, wm->focused_client->window,
-                  wm->focused_client->width, wm->focused_client->height);
-    XResizeWindow(wm->display, wm->focused_client->frame,
-                  wm->focused_client->width, wm->focused_client->height);
   }
 }
 
