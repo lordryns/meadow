@@ -23,6 +23,9 @@ typedef struct {
   bool mod_active;
   bool resize_client;
   int mouse_x, mouse_y;
+  struct client_t **destroyed_clients;
+  int destroyed_clients_capacity;
+  int destroyed_clients_pos_pointer;
 } wm_t;
 
 void initialise_wm(wm_t *wm);

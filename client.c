@@ -9,13 +9,15 @@
 client_t *grab_client_window(wm_t *wm, XEvent *e) {
   XMapRequestEvent *re = &e->xmaprequest;
   Window win = re->window;
+  printf("grab = 0x%lx\n", win);
   XWindowAttributes win_attr = get_window_attributes(wm->display, win);
 
   if (win_attr.override_redirect)
     return NULL;
 
   XSelectInput(wm->display, win,
-               EnterWindowMask | LeaveWindowMask | ExposureMask);
+               EnterWindowMask | LeaveWindowMask | ExposureMask |
+                   SubstructureNotifyMask);
 
   client_t *c = malloc(sizeof(client_t));
   c->window = win;
@@ -28,7 +30,7 @@ client_t *grab_client_window(wm_t *wm, XEvent *e) {
                                  BlackPixel(wm->display, 0));
   XSelectInput(wm->display, c->frame,
                EnterWindowMask | LeaveWindowMask | ButtonPressMask |
-                   ButtonReleaseMask);
+                   ButtonReleaseMask | SubstructureNotifyMask);
 
   c->next = wm->window_list_head;
   wm->window_list_head = c;
@@ -68,7 +70,7 @@ client_t *find_client_using_frame(client_t **head, Window frame) {
 void remove_client_from_linked_list(client_t **head, Window window) {
   client_t *client = find_client_using_window(head, window);
   if (client == NULL) {
-    printf("unable to find client struct for window (0x%lu)\n", window);
+    printf("unable to find client struct for window (0x%lx)\n", window);
     return;
   }
   client_t *prev = NULL;

@@ -32,6 +32,7 @@ void initialse_wm(wm_t *wm) {
   grab_key_with_string(wm, WM_EXIT_KEY, MODIFIER);
   grab_key_with_string(wm, APP_LAUNCHER_KEY, MODIFIER);
   grab_key_with_string(wm, "c", MODIFIER);
+  grab_key_with_string(wm, "k", MODIFIER);
   grab_key_with_string(wm, "Left", MODIFIER);
   grab_key_with_string(wm, "Right", MODIFIER);
   grab_key_with_string(wm, "Up", MODIFIER);
@@ -44,8 +45,22 @@ void initialse_wm(wm_t *wm) {
   wm->move_client = false;
   wm->focused_client = NULL;
   wm->mod_active = false;
+  wm->destroyed_clients_capacity = 20;
+  wm->destroyed_clients_pos_pointer = 0;
+  wm->destroyed_clients =
+      malloc(sizeof(client_t *) * wm->destroyed_clients_capacity);
 
   XUngrabServer(wm->display);
+}
+
+void append_to_destroyed_clients_list(wm_t *wm, client_t *c) {
+  if (wm->destroyed_clients_pos_pointer >= wm->destroyed_clients_capacity) {
+    wm->destroyed_clients =
+        realloc(wm->destroyed_clients,
+                sizeof(client_t *) * wm->destroyed_clients_capacity);
+  }
+  wm->destroyed_clients[wm->destroyed_clients_pos_pointer] = c;
+  wm->destroyed_clients_pos_pointer++;
 }
 
 void handle_key_events(wm_t *wm, XEvent *e) {
@@ -57,6 +72,8 @@ void handle_key_events(wm_t *wm, XEvent *e) {
   KeyCode app_launcher_kcode =
       gen_keycode_from_string(wm, APP_LAUNCHER_KEY, MODIFIER);
   KeyCode kill_client_kcode = gen_keycode_from_string(wm, "c", MODIFIER);
+  KeyCode kill_focused_client_kcode =
+      gen_keycode_from_string(wm, "k", MODIFIER);
   KeyCode resize_client_kcode = gen_keycode_from_string(wm, "r", MODIFIER);
   KeyCode move_client_kcode = gen_keycode_from_string(wm, "m", MODIFIER);
   KeyCode left_client_kcode = gen_keycode_from_string(wm, "Left", MODIFIER);
@@ -155,12 +172,11 @@ void on_window_destroy_event(wm_t *wm, XDestroyWindowEvent *ev) {
   remove_client_from_linked_list(&wm->window_list_head, ev->window); */
 
   printf("DestroyNotify: window=0x%lx event=0x%lx\n", ev->window, ev->event);
+  wm->focused_client = NULL;
 
-  // ignore sub-window destroys (internal client windows, popups, etc.)
   if (ev->event != wm->root)
     return;
 
-  // ignore frame destructions (we caused those ourselves)
   if (find_client_using_frame(&wm->window_list_head, ev->window) != NULL)
     return;
 
@@ -169,8 +185,7 @@ void on_window_destroy_event(wm_t *wm, XDestroyWindowEvent *ev) {
     return;
 
   Window frame = c->frame;
-  c->frame =
-      0; // zero it out before destroying so re-entrant DestroyNotify is ignored
+  c->frame = 0;
 
   if (wm->focused_client == c)
     wm->focused_client = NULL;
@@ -181,6 +196,19 @@ void on_window_destroy_event(wm_t *wm, XDestroyWindowEvent *ev) {
 
   if (frame)
     XDestroyWindow(wm->display, frame);
+}
+
+void cleanup_windowless_frames(wm_t *wm) {
+  for (int i = 0; i < wm->destroyed_clients_capacity; i++) {
+    client_t *c = wm->destroyed_clients[i];
+    for (client_t *it = wm->window_list_head; it != NULL; it = it->next) {
+      if (it == c) {
+        printf("removed 0x%lx\n", it->window);
+        XDestroyWindow(wm->display, it->frame);
+        remove_client_from_linked_list(&wm->window_list_head, it->window);
+      }
+    }
+  }
 }
 
 int main(void) {
@@ -252,10 +280,19 @@ int main(void) {
     }
     case DestroyNotify: {
       printf("destroy notify sent!\n");
-      on_window_destroy_event(&wm, &e.xdestroywindow);
+      printf("destroyed = 0x%lx\n", e.xdestroywindow.window);
+      // on_window_destroy_event(&wm, &e.xdestroywindow);
+      append_to_destroyed_clients_list(
+          &wm, find_client_using_window(&wm.window_list_head,
+                                        e.xdestroywindow.window));
       break;
     }
     case ButtonPress: {
+      int index = 0;
+      for (client_t *it = wm.window_list_head; it != NULL; it = it->next) {
+        index++;
+        printf("win_%d = 0x%lx\n", index, it->window);
+      }
       if (wm.hovered_client != NULL && wm.hovered_client->window != wm.root) {
         wm.focused_client = wm.hovered_client;
       }
@@ -263,15 +300,15 @@ int main(void) {
         XSetWindowBorder(wm.display, wm.focused_client->frame, 0x5E85BF);
         XRaiseWindow(wm.display, wm.focused_client->frame);
 
-        XSetInputFocus(wm.display, wm.focused_client->window, RevertToParent,
-                       CurrentTime);
+        XSetInputFocus(wm.display, wm.focused_client->window,
+                       RevertToPointerRoot, CurrentTime);
         XAllowEvents(wm.display, ReplayPointer, CurrentTime);
       }
 
       if (wm.hovered_client != NULL)
-        printf("hovered = 0x%lu\n", wm.hovered_client->window);
+        printf("hovered = 0x%lx\n", wm.hovered_client->frame);
       if (wm.focused_client != NULL)
-        printf("focused = 0x%lu\n\n", wm.focused_client->window);
+        printf("focused = 0x%lx\n\n", wm.focused_client->frame);
 
       break;
     }
@@ -283,6 +320,7 @@ int main(void) {
     }
     }
 
+    cleanup_windowless_frames(&wm);
     XSync(wm.display, 0);
   }
   return 0;
