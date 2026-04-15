@@ -16,6 +16,8 @@ void initialse_wm(wm_t *wm) {
 
   XGrabServer(wm->display);
 
+  printf("root=0x%lx\n", wm->root);
+
   XDefineCursor(wm->display, wm->root, wm->cursor);
   XGrabButton(wm->display, Button1, 0, wm->root, False, ButtonPressMask,
               GrabModeSync, GrabModeAsync, wm->root, wm->cursor);
@@ -115,8 +117,13 @@ void handle_key_events(wm_t *wm, XEvent *e) {
   }
 
   if (!wm->resize_client && !wm->move_client) {
-    for (client_t *it = wm->window_list_head; it != NULL; it = it->next)
-      XSetWindowBorder(wm->display, it->frame, WhitePixel(wm->display, 0));
+    for (client_t *it = wm->window_list_head; it != NULL; it = it->next) {
+      if (it->window != wm->focused_client->window) {
+        XSetWindowBorder(wm->display, it->frame, WhitePixel(wm->display, 0));
+      } else {
+        XSetWindowBorder(wm->display, it->frame, 0x5E85BF);
+      }
+    }
   }
 }
 
@@ -130,14 +137,50 @@ void on_window_destroy_event(wm_t *wm, XDestroyWindowEvent *ev) {
     }
   } */
 
-  printf("c_struct = %p\n", (void *)wm->focused_client);
+  /* printf("c_struct = %p\n", (void *)wm->focused_client);
   if (wm->focused_client != NULL) {
     printf("window = 0x%lx\n", wm->focused_client->window);
     printf("frame = 0x%lx\n", wm->focused_client->frame);
     if (ev->window == wm->focused_client->window) {
       XDestroyWindow(wm->display, wm->focused_client->frame);
     }
+  } */
+  /*if (ev->window == wm->root) {
+    printf("event acting on root, ignoring...\n");
+    return;
   }
+
+  if (wm->focused_client != NULL)
+    XDestroyWindow(wm->display, wm->focused_client->frame);
+  remove_client_from_linked_list(&wm->window_list_head, ev->window); */
+
+  printf("DestroyNotify: window=0x%lx event=0x%lx\n", ev->window, ev->event);
+
+  // ignore sub-window destroys (internal client windows, popups, etc.)
+  if (ev->event != wm->root)
+    return;
+
+  // ignore frame destructions (we caused those ourselves)
+  if (find_client_using_frame(&wm->window_list_head, ev->window) != NULL)
+    return;
+
+  client_t *c = find_client_using_window(&wm->window_list_head, ev->window);
+  if (c == NULL)
+    return;
+
+  Window frame = c->frame;
+  c->frame =
+      0; // zero it out before destroying so re-entrant DestroyNotify is ignored
+
+  if (wm->focused_client == c)
+    wm->focused_client = NULL;
+  if (wm->hovered_client == c)
+    wm->hovered_client = NULL;
+
+  remove_client_from_linked_list(&wm->window_list_head, ev->window);
+
+  if (frame)
+    XDestroyWindow(wm->display, frame);
 }
 
 int main(void) {
@@ -153,31 +196,39 @@ int main(void) {
       break;
     }
     case MapRequest: {
+      printf("MapRequest: window=0x%lx\n", e.xmaprequest.window);
       client_t *client = grab_client_window(&wm, &e);
-      render_client(&wm, client);
+      if (client != NULL) {
+        render_client(&wm, client);
+      }
       break;
     }
     case ConfigureRequest: {
       XConfigureRequestEvent *ev = &e.xconfigurerequest;
-      XWindowChanges changes;
-      changes.x = ev->x;
-      changes.y = ev->y;
-      changes.width = ev->width;
-      changes.height = ev->height;
-      changes.border_width = ev->border_width;
-      changes.sibling = ev->above;
-      changes.stack_mode = ev->detail;
+      XWindowChanges changes = {
+          .x = ev->x,
+          .y = ev->y,
+          .width = ev->width,
+          .height = ev->height,
+          .border_width = ev->border_width,
+          .sibling = ev->above,
+          .stack_mode = ev->detail,
+      };
       XConfigureWindow(wm.display, ev->window, ev->value_mask, &changes);
 
-      XConfigureEvent ce;
-      ce.x = ev->x;
-      ce.y = ev->y;
-      ce.width = ev->width;
-      ce.height = ev->height;
-      ce.border_width = ev->border_width;
-      ce.above = None;
-      ce.override_redirect = False;
-
+      XConfigureEvent ce = {
+          .type = ConfigureNotify,
+          .display = wm.display,
+          .event = ev->window,
+          .window = ev->window,
+          .x = ev->x,
+          .y = ev->y,
+          .width = ev->width,
+          .height = ev->height,
+          .border_width = ev->border_width,
+          .above = None,
+          .override_redirect = False,
+      };
       XSendEvent(wm.display, ev->window, False, StructureNotifyMask,
                  (XEvent *)&ce);
       break;
